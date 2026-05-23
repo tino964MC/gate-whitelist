@@ -1,0 +1,11 @@
+version: "3"
+services:
+  gate:
+    image: ghcr.io/tino964mc/gate-whitelist:latest
+    container_name: gate
+    ports:
+      - "25565:25565"
+    volumes:
+      - ./config.yml:/data/config.yml
+      - ./whitelist.txt:/data/whitelist.txt
+    restart: unless-stopped
