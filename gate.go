@@ -6,6 +6,7 @@ import (
 	"github.com/minekube/gate-plugin-template/plugins/ping"
 	"github.com/minekube/gate-plugin-template/plugins/tablist"
 	"github.com/minekube/gate-plugin-template/plugins/titlecmd"
+	"github.com/minekube/gate-plugin-template/plugins/whitelist"
 	"go.minekube.com/gate/cmd/gate"
 	"go.minekube.com/gate/pkg/edition/java/proxy"
 )
@@ -24,6 +25,7 @@ func main() {
 		bossbar.Plugin,
 		ping.Plugin,
 		titlecmd.Plugin,
+		whitelist.Plugin,
 
 		// Add more plugins as you like.
 		// They will be initialized in the same order as appended.
