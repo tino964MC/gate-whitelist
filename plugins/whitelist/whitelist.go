@@ -32,10 +32,9 @@ var Plugin = proxy.Plugin{
 		log := logr.FromContextOrDiscard(ctx)
 
 		if err := wl.load(); err != nil {
-			log.Info("No existing whitelist file, starting empty")
-		} else {
-			log.Info("Loaded whitelist", "count", len(wl.names))
+			log.Error(err, "Failed to load whitelist")
 		}
+		log.Info("Loaded whitelist", "count", len(wl.names))
 
 		event.Subscribe(p.Event(), 0, onLogin)
 		p.Command().Register(whitelistCommand())
@@ -45,14 +44,18 @@ var Plugin = proxy.Plugin{
 }
 
 func (w *whitelist) load() error {
+	w.mu.Lock()
+	defer w.mu.Unlock()
+
 	f, err := os.Open(whitelistFile)
 	if err != nil {
+		if os.IsNotExist(err) {
+			w.names = make(map[string]bool)
+			return nil
+		}
 		return err
 	}
 	defer f.Close()
-
-	w.mu.Lock()
-	defer w.mu.Unlock()
 
 	w.names = make(map[string]bool)
 	scanner := bufio.NewScanner(f)

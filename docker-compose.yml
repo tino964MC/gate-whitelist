@@ -1,4 +1,3 @@
-version: "3"
 services:
   gate:
     image: ghcr.io/tino964mc/gate-whitelist:latest
