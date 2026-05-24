@@ -5,6 +5,7 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"sort"
 	"strings"
 	"sync"
 
@@ -57,15 +58,19 @@ func (w *whitelist) load() error {
 	}
 	defer f.Close()
 
-	w.names = make(map[string]bool)
+	loaded := make(map[string]bool)
 	scanner := bufio.NewScanner(f)
 	for scanner.Scan() {
 		name := strings.TrimSpace(scanner.Text())
 		if name != "" {
-			w.names[strings.ToLower(name)] = true
+			loaded[strings.ToLower(name)] = true
 		}
 	}
-	return scanner.Err()
+	if err := scanner.Err(); err != nil {
+		return err
+	}
+	w.names = loaded
+	return nil
 }
 
 func (w *whitelist) save() error {
@@ -78,7 +83,12 @@ func (w *whitelist) save() error {
 	}
 	defer f.Close()
 
+	names := make([]string, 0, len(w.names))
 	for name := range w.names {
+		names = append(names, name)
+	}
+	sort.Strings(names)
+	for _, name := range names {
 		if _, err := f.WriteString(name + "\n"); err != nil {
 			return err
 		}
@@ -121,6 +131,7 @@ func (w *whitelist) namesList() []string {
 	for name := range w.names {
 		names = append(names, name)
 	}
+	sort.Strings(names)
 	return names
 }
 
