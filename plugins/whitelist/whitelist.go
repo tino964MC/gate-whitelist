@@ -133,6 +133,21 @@ func onLogin(e *proxy.LoginEvent) {
 	}
 }
 
+func msg(content string, clr color.Color) c.Component {
+	return &c.Text{Content: content, S: c.Style{Color: clr}}
+}
+
+func msgBold(content string, clr color.Color) c.Component {
+	return &c.Text{Content: content, S: c.Style{Color: clr, Bold: true}}
+}
+
+func buildMsg(parts ...c.Component) c.Component {
+	return &c.Text{Extra: append(
+		[]c.Component{msg("[WhitelistGate] ", color.DarkGreen)},
+		parts...,
+	)}
+}
+
 func whitelistCommand() brigodier.LiteralNodeBuilder {
 	return brigodier.Literal("whitelistgate").
 		Then(brigodier.Literal("add").
@@ -141,15 +156,15 @@ func whitelistCommand() brigodier.LiteralNodeBuilder {
 					name := ctx.String("name")
 					if wl.add(name) {
 						_ = wl.save()
-						return ctx.Source.SendMessage(&c.Text{
-							Content: "Added " + name + " to whitelist",
-							S:       c.Style{Color: color.Green},
-						})
+						return ctx.Source.SendMessage(buildMsg(
+							msgBold(name, color.Yellow),
+							msg(" has been added to the whitelist", color.Green),
+						))
 					}
-					return ctx.Source.SendMessage(&c.Text{
-						Content: name + " is already whitelisted",
-						S:       c.Style{Color: color.Red},
-					})
+					return ctx.Source.SendMessage(buildMsg(
+						msgBold(name, color.Yellow),
+						msg(" is already whitelisted", color.Red),
+					))
 				})))).
 		Then(brigodier.Literal("remove").
 			Then(brigodier.Argument("name", brigodier.String).
@@ -157,41 +172,43 @@ func whitelistCommand() brigodier.LiteralNodeBuilder {
 					name := ctx.String("name")
 					if wl.remove(name) {
 						_ = wl.save()
-						return ctx.Source.SendMessage(&c.Text{
-							Content: "Removed " + name + " from whitelist",
-							S:       c.Style{Color: color.Green},
-						})
+						return ctx.Source.SendMessage(buildMsg(
+							msgBold(name, color.Yellow),
+							msg(" has been removed from the whitelist", color.Green),
+						))
 					}
-					return ctx.Source.SendMessage(&c.Text{
-						Content: name + " is not on the whitelist",
-						S:       c.Style{Color: color.Red},
-					})
+					return ctx.Source.SendMessage(buildMsg(
+						msgBold(name, color.Yellow),
+						msg(" is not on the whitelist", color.Red),
+					))
 				})))).
 		Then(brigodier.Literal("list").
 			Executes(command.Command(func(ctx *command.Context) error {
 				names := wl.namesList()
 				if len(names) == 0 {
-					return ctx.Source.SendMessage(&c.Text{
-						Content: "Whitelist is empty",
-						S:       c.Style{Color: color.Yellow},
-					})
+					return ctx.Source.SendMessage(buildMsg(
+						msg("Whitelist is empty", color.Yellow),
+					))
 				}
-				return ctx.Source.SendMessage(&c.Text{
-					Content: "Whitelisted: " + strings.Join(names, ", "),
-					S:       c.Style{Color: color.Green},
-				})
+				return ctx.Source.SendMessage(buildMsg(
+					msg("Whitelisted players (", color.Green),
+					msgBold(fmt.Sprintf("%d", len(names)), color.Yellow),
+					msg("): ", color.Green),
+					msgBold(strings.Join(names, ", "), color.White),
+				))
 			}))).
 		Then(brigodier.Literal("reload").
 			Executes(command.Command(func(ctx *command.Context) error {
 				if err := wl.load(); err != nil {
-					return ctx.Source.SendMessage(&c.Text{
-						Content: "Failed to reload whitelist: " + err.Error(),
-						S:       c.Style{Color: color.Red},
-					})
+					return ctx.Source.SendMessage(buildMsg(
+						msg("Failed to reload: ", color.Red),
+						msg(err.Error(), color.Red),
+					))
 				}
-				return ctx.Source.SendMessage(&c.Text{
-					Content: fmt.Sprintf("Whitelist reloaded (%d players)", len(wl.names)),
-					S:       c.Style{Color: color.Green},
-				})
+				return ctx.Source.SendMessage(buildMsg(
+					msg("Whitelist reloaded. ", color.Green),
+					msgBold(fmt.Sprintf("%d", len(wl.names)), color.Yellow),
+					msg(" players whitelisted", color.Green),
+				))
 			})))
 }
