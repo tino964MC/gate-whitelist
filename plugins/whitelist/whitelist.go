@@ -132,13 +132,13 @@ func onLogin(e *proxy.LoginEvent) {
 }
 
 func whitelistCommand() brigodier.LiteralNodeBuilder {
-	return brigodier.Literal("whitelist").
+	return brigodier.Literal("whitelistgate").
 		Requires(command.Requires(func(c *command.RequiresContext) bool {
 			player, ok := c.Source.(proxy.Player)
 			if !ok {
 				return true
 			}
-			return player.HasPermission("whitelist.admin")
+			return player.HasPermission("whitelist.admin") || player.HasPermission("minecraft.command.op") || player.HasPermission("*")
 		})).
 		Then(brigodier.Literal("add").
 			Then(brigodier.Argument("name", brigodier.String).
