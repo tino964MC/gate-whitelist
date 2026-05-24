@@ -62,7 +62,7 @@ func (w *whitelist) load() error {
 	for scanner.Scan() {
 		name := strings.TrimSpace(scanner.Text())
 		if name != "" {
-			w.names[name] = true
+			w.names[strings.ToLower(name)] = true
 		}
 	}
 	return scanner.Err()
@@ -89,26 +89,28 @@ func (w *whitelist) save() error {
 func (w *whitelist) contains(name string) bool {
 	w.mu.RLock()
 	defer w.mu.RUnlock()
-	return w.names[name]
+	return w.names[strings.ToLower(name)]
 }
 
 func (w *whitelist) add(name string) bool {
 	w.mu.Lock()
 	defer w.mu.Unlock()
-	if w.names[name] {
+	lower := strings.ToLower(name)
+	if w.names[lower] {
 		return false
 	}
-	w.names[name] = true
+	w.names[lower] = true
 	return true
 }
 
 func (w *whitelist) remove(name string) bool {
 	w.mu.Lock()
 	defer w.mu.Unlock()
-	if !w.names[name] {
+	lower := strings.ToLower(name)
+	if !w.names[lower] {
 		return false
 	}
-	delete(w.names, name)
+	delete(w.names, lower)
 	return true
 }
 
