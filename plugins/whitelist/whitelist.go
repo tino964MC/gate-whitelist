@@ -149,7 +149,7 @@ func msg(content string, clr color.Color) c.Component {
 }
 
 func msgBold(content string, clr color.Color) c.Component {
-	return &c.Text{Content: content, S: c.Style{Color: clr, Bold: true}}
+	return &c.Text{Content: content, S: c.Style{Color: clr, Bold: c.True}}
 }
 
 func buildMsg(parts ...c.Component) c.Component {
