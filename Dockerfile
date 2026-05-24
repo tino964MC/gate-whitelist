@@ -23,6 +23,6 @@ RUN CGO_ENABLED=0 GOOS=$TARGETOS GOARCH=$TARGETARCH \
 # Move binary into final image
 FROM --platform=$TARGETPLATFORM alpine:3.21
 RUN apk add --no-cache ca-certificates
-COPY --from=build /workspace/gate /usr/local/bin/gate
+COPY --from=build /workspace/gate /gate
 WORKDIR /data
-CMD ["gate"]
+CMD ["/gate"]
